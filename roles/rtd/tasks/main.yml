@@ -1,0 +1,61 @@
+---
+- name: create rtd group
+  group: name={{ app_user}} state=present
+
+- name: create rtd user
+  user: name={{ app_user }} shell=/bin/bash groups={{ app_user }} append=yes home=/home/{{ app_user }}
+
+- name: create .ssh dir for rtd user
+  file: dest={{ key_file | dirname }} state=directory owner={{ app_user }} mode=0700
+
+- name: copy private key
+  copy: content="{{ priv_key }}" dest=/home/{{ app_user }}/.ssh/id_rsa owner={{ app_user }} mode=0400
+
+- name: copy pub key
+  copy: src=id_rsa.pub dest=/home/{{ app_user }}/.ssh owner={{ app_user }} mode=0644
+
+- name: make directory to clone repo to
+  file: path={{ project_path }}/{{ app_name }} state=directory
+
+- name: clone rtd repo from github
+  git: repo=https://github.com/rtfd/readthedocs.org.git
+       dest={{ project_path }}/{{ app_name }}
+
+- name: install dependencies
+  yum: name={{ item }} state=present
+  with_items:
+    - python-devel
+    - gcc
+    - gcc-c++
+    - make
+    - openssl-devel
+    - libxml2-devel
+    - libxslt-devel
+
+- name: install pip
+  easy_install: name=pip
+
+#- name: pip install rtd
+#  command: pip install -r {{ project_path }}/{{ app_name }}/requirements.txt
+
+#- name: pip install gunicorn
+#  pip: name=uwsgi
+
+#- name: migrate rtd database
+#  django_manage: command=migrate app_path={{ project_path }}/{{ app_name }}
+
+#- name: load initial data
+#  django_manage: command=loaddata app_path={{ project_path }}/{{ app_name }} fixtures=test_data
+
+#- name: create admin user
+#  shell: echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'ccs-sdlc-admins@cisco.com', 'admin')" | {{ project_path }}/{{ app_name }}/manage.py shell
+
+#- name: change ownership of app_dir
+#  file: path={{ project_path }}/{{ app_name }} recurse=yes owner={{ app_user }} group={{ app_user }}
+
+#- name: remove build dependencies
+#  yum: name={{ item }} state=absent
+#  with_items:
+#    - gcc
+#    - gcc-c++
+#    - make

@@ -1,0 +1,11 @@
+---
+project_path: /var/www/
+app_name: rtd
+app_user: rtd
+key_file: /home/{{ app_user }}/.ssh/id_rsa
+priv_key: |
+#  -----BEGIN RSA PRIVATE KEY-----
+#....................................
+# Put private key info here
+#....................................
+#  -----END RSA PRIVATE KEY-----
